@@ -36,7 +36,7 @@ def configure_retriever(uploaded_files):
     vectordb = DocArrayInMemorySearch.from_documents(splits, embeddings)
 
     # Define retriever
-    retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 4, "fetch_k": 8})
+    retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
 
     return retriever
 
@@ -75,13 +75,9 @@ class PrintRetrievalHandler(BaseCallbackHandler):
         self.status.update(state="complete")
 
 
-# Get an OpenAI API Key before continuing
-if "openai_api_key" in st.secrets:
-    openai_api_key = st.secrets.openai_api_key
-else:
-    openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
+openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 if not openai_api_key:
-    st.info("Enter an OpenAI API Key to continue")
+    st.info("Please add your OpenAI API key to continue.")
     st.stop()
 
 uploaded_files = st.sidebar.file_uploader(
@@ -99,7 +95,7 @@ memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=msgs, r
 
 # Setup LLM and QA chain
 llm = ChatOpenAI(
-    model_name="gpt-4-0125-preview", openai_api_key=openai_api_key, temperature=0.7, streaming=True
+    model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, temperature=0, streaming=True
 )
 qa_chain = ConversationalRetrievalChain.from_llm(
     llm, retriever=retriever, memory=memory, verbose=True
